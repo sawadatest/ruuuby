@@ -1,4 +1,170 @@
-<h1>Welcome</h1>
-<p>すごいアプリへのはじめの一歩。</p>
+<style>
+#id_image{
+  color: #ffffff;
+  font-family: sans-serif;
+  width: 100%;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 1s;
+}
 
-<%=@hoge %>
+.sun{
+  background-color: #29b7e5;
+}
+
+.cloud{
+  background-color: #757782;
+}
+
+.rain{
+  background-color: #48699e;
+}
+
+.snow{
+  background-color: #d7dbed;
+}
+
+#id_time{
+  width: 100%;
+  height:20%;
+  overflow-x: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
+#id_area{
+  height:100%;
+}
+
+#id_table{
+  background-color: #ffffff;
+  font-family: sans-serif;
+  width: 880%;
+  height:100%;
+  color: #666666;
+  font-size: 2.5vh;
+  text-align: center;
+  table-layout: fixed;
+}
+
+#id_table td{
+  height:100%;
+  margin: 0;
+  padding: 0;
+  transition: all 0.5s;
+}
+
+.on{
+
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+
+  background-color: #e8d994;
+}
+
+#id_date{
+  font-size: 5vh;
+  transform: translateY(80%);
+}
+#id_details{
+  font-size: 5vh;
+  transform: translateY(-80%);
+}
+#id_character{
+  font-size: 30vh;
+}
+
+</style>
+
+
+
+
+
+
+<div id="id_image">
+  <div id="id_date"></div>
+  <div id="id_character"></div>
+  <div id="id_details"></div>
+</div>
+<div id="id_time">
+  <div id="id_area"></div>
+</div>
+
+
+
+
+
+<script>
+
+var weatherToCharacter={
+  "Clear":"晴",
+  "Clouds":"曇",
+  "Rain":"雨",
+  "Snow":"雪",
+};
+
+var weatherToClass={
+  "Clear":"sun",
+  "Clouds":"cloud",
+  "Rain":"rain",
+  "Snow":"snow",
+};
+
+var splitDate=function(date){
+  var date2=date.split(" ");
+  var date3=date2[0].split("-");
+  var date4=date2[1].split(":");
+  var result={};
+  result["y"]=date3[0];
+  result["m"]=date3[1];
+  result["d"]=date3[2];
+  result["h"]=date4[0];
+  return result;
+};
+
+var changePage=function(){
+  var all_scroll=$("#id_table").width()-$("#id_time").width();
+  var scroll=$("#id_time").scrollLeft()/all_scroll;
+  var step=Math.min(parseInt(scroll*40),39);
+  var weather=list[step]["weather"][0]["main"];
+  var temp=parseFloat(list[step]["main"]["temp"])-273.15;
+  var date=splitDate(list[step]["dt_txt"]);
+  $("#id_date").text(date["m"]+"月"+date["d"]+"日"+date["h"]+"時");
+  $("#id_details").text(temp.toFixed(1)+"℃");
+  $("#id_character").text(weatherToCharacter[weather]);
+  $("#id_image").attr("class",weatherToClass[weather]);
+  $("td").attr("class","");
+  $("#id_td_"+step).attr("class","on");
+};
+
+var init=function(){
+  var table=$("<table>");
+  table.attr("id","id_table");
+  var tr=$("<tr>");
+  var td_begin=$("<td>");
+  var td_end=$("<td>");
+  td_begin.attr("colspan","2");
+  td_end.attr("colspan","2");
+  td_begin.text("▶︎スクロール");
+  tr.append(td_begin);
+  for (var item in list) {
+    var td=$("<td>");
+    var date=splitDate(list[item]["dt_txt"]);
+    var weather=list[item]["weather"][0];
+    td.html(date["m"]+"月"+date["d"]+"日"+date["h"]+"時");
+    td.attr("id","id_td_"+item);
+    tr.append(td);
+  }
+  tr.append(td_end);
+  table.append(tr);
+  $("#id_area").append(table);
+  changePage();
+}
+
+var data= JSON.parse(gon.weather);
+console.log(data);
+var list=data["list"]
+init();
+$("#id_time").scroll(changePage);
+</script>
